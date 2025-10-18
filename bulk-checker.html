@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk ASIN Rank Checker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .results-box {
+            width: 100%;
+            height: 400px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .copy-btn {
+            background: #48bb78;
+        }
+        .copy-btn:hover {
+            background: #38a169;
+        }
+        .clear-btn {
+            background: #e53e3e;
+        }
+        .clear-btn:hover {
+            background: #c53030;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .status.checking {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        .progress {
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 30px;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .info-box ul {
+            color: #856404;
+            margin-left: 20px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .rank-item {
+            color: #2563eb;
+            font-weight: 500;
+        }
+        .category-name {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🚀 Bulk ASIN Rank Checker (Multi-Category)</h1>
+            <p class="subtitle">Check all BSR ranks with category names - US Marketplace Only</p>
+
+            <div class="info-box">
+                <h3>📋 How to Use:</h3>
+                <ul>
+                    <li>Paste your ASINs (one per line) in the left box</li>
+                    <li>Click "Check All Ranks" - captures ALL ranks with category names</li>
+                    <li>Wait for results (takes 3-5 seconds per ASIN)</li>
+                    <li>Copy results or export to CSV with category information</li>
+                </ul>
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Total ASINs</div>
+                    <div class="stat-value" id="totalAsins">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Checked</div>
+                    <div class="stat-value" id="checkedAsins">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Success</div>
+                    <div class="stat-value" id="successAsins">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Failed</div>
+                    <div class="stat-value" id="failedAsins">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Ranks</div>
+                    <div class="stat-value" id="totalRanks">0</div>
+                </div>
+            </div>
+
+            <div id="status" class="status" style="display: none;"></div>
+
+            <div class="progress" id="progressBar" style="display: none;">
+                <div class="progress-bar" id="progressBarFill">0%</div>
+            </div>
+
+            <div class="input-section">
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">
+                        📥 Input ASINs (one per line):
+                    </label>
+                    <textarea id="asinInput" placeholder="B08N5WRWNW&#10;B07XJ8C8F5&#10;B09G9FPHY6&#10;..."></textarea>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">
+                        📤 Results (with all categories):
+                    </label>
+                    <div id="results" class="results-box">Results will appear here...</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="checkBtn" onclick="checkAllRanks()">🔍 Check All Ranks</button>
+                <button class="copy-btn" onclick="copyResults()">📋 Copy Results</button>
+                <button style="background: #38a169;" onclick="exportCSV()">📥 Export CSV</button>
+                <button class="clear-btn" onclick="clearAll()">🗑️ Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let isChecking = false;
+        let allResultsData = [];
+
+        async function checkAllRanks() {
+            if (isChecking) return;
+
+            const input = document.getElementById('asinInput').value.trim();
+            const asins = input.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .filter(line => /^[A-Z0-9]{10}$/.test(line));
+
+            if (asins.length === 0) {
+                showStatus('⚠️ Please enter valid ASINs (10 characters, letters and numbers only)', 'error');
+                return;
+            }
+
+            isChecking = true;
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('progressBar').style.display = 'block';
+            
+            updateStats(asins.length, 0, 0, 0, 0);
+
+            let displayResults = [];
+            allResultsData = [];
+            let checked = 0;
+            let success = 0;
+            let failed = 0;
+            let totalRanks = 0;
+
+            document.getElementById('results').textContent = 'Checking ranks... Please wait...\n';
+
+            for (let i = 0; i < asins.length; i++) {
+                const asin = asins[i];
+                showStatus(`🔄 Checking ${i + 1}/${asins.length}: ${asin}`, 'checking');
+                updateProgress((i / asins.length) * 100);
+
+                try {
+                    const response = await fetch(`${API_URL}/check-rank/${asin}`);
+                    const data = await response.json();
+
+                    checked++;
+
+                    if (response.ok && data.ranks && data.ranks.length > 0) {
+                        displayResults.push(`\n📦 ASIN: ${asin}`);
+                        displayResults.push('─'.repeat(50));
+                        
+                        data.ranks.forEach((rankInfo, idx) => {
+                            displayResults.push(`  Rank ${idx + 1}: #${rankInfo.rank.toLocaleString()}`);
+                            displayResults.push(`  Category: ${rankInfo.category}`);
+                            if (idx < data.ranks.length - 1) displayResults.push('');
+                            
+                            allResultsData.push({
+                                asin: asin,
+                                rank: rankInfo.rank,
+                                category: rankInfo.category
+                            });
+                            totalRanks++;
+                        });
+                        
+                        success++;
+                    } else {
+                        displayResults.push(`\n📦 ASIN: ${asin}`);
+                        displayResults.push('─'.repeat(50));
+                        displayResults.push('  ❌ Rank Not Found');
+                        
+                        allResultsData.push({
+                            asin: asin,
+                            rank: 'N/A',
+                            category: 'N/A'
+                        });
+                        failed++;
+                    }
+                } catch (error) {
+                    displayResults.push(`\n📦 ASIN: ${asin}`);
+                    displayResults.push('─'.repeat(50));
+                    displayResults.push('  ❌ Error (Server may be down)');
+                    
+                    allResultsData.push({
+                        asin: asin,
+                        rank: 'Error',
+                        category: 'Error'
+                    });
+                    failed++;
+                    checked++;
+                }
+
+                updateStats(asins.length, checked, success, failed, totalRanks);
+                document.getElementById('results').textContent = displayResults.join('\n');
+
+                if (i < asins.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+            }
+
+            updateProgress(100);
+            showStatus(`✅ Complete! Checked ${asins.length} ASINs (${success} found, ${failed} failed) - ${totalRanks} total ranks`, 'success');
+            
+            isChecking = false;
+            document.getElementById('checkBtn').disabled = false;
+        }
+
+        function updateStats(total, checked, success, failed, totalRanks) {
+            document.getElementById('totalAsins').textContent = total;
+            document.getElementById('checkedAsins').textContent = checked;
+            document.getElementById('successAsins').textContent = success;
+            document.getElementById('failedAsins').textContent = failed;
+            document.getElementById('totalRanks').textContent = totalRanks;
+        }
+
+        function updateProgress(percent) {
+            const bar = document.getElementById('progressBarFill');
+            bar.style.width = percent + '%';
+            bar.textContent = Math.round(percent) + '%';
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+        }
+
+        function copyResults() {
+            const results = document.getElementById('results').textContent;
+            
+            if (results === 'Results will appear here...' || results.includes('Checking ranks')) {
+                showStatus('⚠️ No results to copy yet!', 'error');
+                return;
+            }
+
+            navigator.clipboard.writeText(results).then(() => {
+                showStatus('✅ Results copied to clipboard!', 'success');
+            }).catch(() => {
+                showStatus('❌ Failed to copy. Please copy manually.', 'error');
+            });
+        }
+
+        function clearAll() {
+            document.getElementById('asinInput').value = '';
+            document.getElementById('results').textContent = 'Results will appear here...';
+            document.getElementById('status').style.display = 'none';
+            document.getElementById('progressBar').style.display = 'none';
+            allResultsData = [];
+            updateStats(0, 0, 0, 0, 0);
+        }
+
+        function exportCSV() {
+            if (allResultsData.length === 0) {
+                showStatus('⚠️ No results to export yet!', 'error');
+                return;
+            }
+
+            // Group data by ASIN
+            const groupedByAsin = {};
+            allResultsData.forEach(item => {
+                if (!groupedByAsin[item.asin]) {
+                    groupedByAsin[item.asin] = [];
+                }
+                groupedByAsin[item.asin].push(item);
+            });
+
+            // Find max number of ranks for any ASIN (for column headers)
+            let maxRanks = 0;
+            Object.values(groupedByAsin).forEach(ranks => {
+                maxRanks = Math.max(maxRanks, ranks.length);
+            });
+
+            // Build CSV header
+            let csvContent = 'ASIN';
+            for (let i = 1; i <= maxRanks; i++) {
+                csvContent += `,Category ${i},Rank ${i}`;
+            }
+            csvContent += '\n';
+
+            // Build CSV rows
+            Object.keys(groupedByAsin).forEach(asin => {
+                const ranks = groupedByAsin[asin];
+                let row = asin;
+                
+                // Add all ranks for this ASIN
+                ranks.forEach(item => {
+                    const category = `"${item.category.replace(/"/g, '""')}"`;
+                    const rank = item.rank === 'N/A' || item.rank === 'Error' ? item.rank : item.rank;
+                    row += `,${category},${rank}`;
+                });
+                
+                // Fill empty columns if this ASIN has fewer ranks than maxRanks
+                const emptyColumns = (maxRanks - ranks.length) * 2;
+                for (let i = 0; i < emptyColumns; i++) {
+                    row += ',';
+                }
+                
+                csvContent += row + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+            const filename = `amazon_ranks_${timestamp}.csv`;
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showStatus(`✅ CSV exported: ${Object.keys(groupedByAsin).length} ASINs with ${allResultsData.length} total ranks`, 'success');
+        }
+
+        document.getElementById('asinInput').addEventListener('input', (e) => {
+            const asins = e.target.value.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .filter(line => /^[A-Z0-9]{10}$/.test(line));
+            
+            updateStats(asins.length, 0, 0, 0, 0);
+        });
+    </script>
+</body>
+</html>
