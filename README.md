@@ -2,7 +2,7 @@
 
 **For Amazon Sellers, PPC Managers & E-commerce Professionals**
 
-Track your product rankings automatically and get instant alerts when they drop - **NO CODING EXPERIENCE NEEDED!**
+Track your product rankings automatically - **NO CODING EXPERIENCE NEEDED!**
 
 ---
 
